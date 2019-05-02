@@ -9,7 +9,7 @@
       <Title Value="Cheat Engine 6.8.x"/>
       <UseAppBundle Value="False"/>
       <XPManifest>
-        <ExecutionLevel Value="requireAdministrator"/>
+        <ExecutionLevel Value="asInvoker"/>
       </XPManifest>
       <Icon Value="0"/>
     </General>

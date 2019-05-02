@@ -15,7 +15,7 @@
       <ResourceType Value="res"/>
       <UseXPManifest Value="True"/>
       <XPManifest>
-        <ExecutionLevel Value="requireAdministrator"/>
+        <ExecutionLevel Value="asInvoker"/>
       </XPManifest>
       <Icon Value="0"/>
     </General>
