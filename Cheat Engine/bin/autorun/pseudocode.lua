@@ -38,7 +38,7 @@ end
 
 function pfindNextSpot(state)
   --check if there are unreached branch destinations, if so, change the address to one of those
-  print('pfindNextSpot')
+  --print('pfindNextSpot')
 
   for destination,origins in pairs(state.branchDestinations) do
     if state.parsed[destination]==nil then
@@ -48,7 +48,7 @@ function pfindNextSpot(state)
   end
 
   --if not, return false,true to exit
-  print("no new point found")
+  --print("no new point found")
   return false,true
 end
 
@@ -128,9 +128,16 @@ end
 
 
 plookup['jmp']=function(state)
-  state.address=genericJumpHandler(state, true)
-  return true
+  local newa
+  newa=genericJumpHandler(state, true)
+  if newa==nil then --register based jmp
+    state.branchOrigins[state.address]={} --jumps to 'nowhere and everywhere'
+  else
+    state.address=newa
+    return true
+  end
 end
+
 
 plookup['loop']=function(state)
   genericJumpHandler(state)
@@ -139,14 +146,17 @@ end
 plookup['ret']=function(state)
   --end of the function (or some weird trick)
 
-  print('ret')
+  --print('ret')
+  
+  state.branchOrigins[state.address]={}
+  
   return pfindNextSpot(state)
 end
 
 
 function parseFunction(startaddress, limit)
   local state={}
-  print('parseFunction')
+  --print('parseFunction')
   state.branchDestinations={} --list of branch destinations
   state.branchOrigins={} --list of branch origins
 
@@ -166,7 +176,7 @@ function parseFunction(startaddress, limit)
   while (not done) and (limit>0) do
     local a=state.address
 
-    print(string.format('%x',a))
+   -- print(string.format('%x',a))
 
     if state.parsed[a] then
       --already parsed
@@ -230,6 +240,7 @@ function createBlocks(state)
 
   blocks[1]={}
   blocks[1].start=sal[1]
+  blocks[1].salstartindex=1
 
   blocks[1].getsJumpedToBy=state.branchDestinations[sal[1]]
 
@@ -238,27 +249,36 @@ function createBlocks(state)
     if state.branchDestinations[address] then --first check this
       --this is a destination, so cut off at the previous one
       blocks[#blocks].stop=sal[i-1]
+      blocks[#blocks].salstopindex=i-1
       blocks[#blocks].jumpsTo=state.branchOrigins[blocks[#blocks].stop]
 
       if blocks[#blocks].jumpsTo==nil then
         blocks[#blocks].jumpsTo={}
         blocks[#blocks].jumpsTo.destinationtaken=address
         blocks[#blocks].jumpsTo.logicalFollow=true
+        
+        
       end
 
       blocks[#blocks+1]={}
       blocks[#blocks].start=address
+      blocks[#blocks].salstartindex=i
       blocks[#blocks].getsJumpedToBy=state.branchDestinations[address]
     end
+    
+    if (i==#sal) and (state.branchOrigins[address]) then
+      blocks[#blocks].jumpsTo=state.branchOrigins[address]
+    end    
   end
 
   blocks[#blocks].stop=sal[#sal]
+  blocks[#blocks].salstopindex=#sal
 
-  return blocks
+  return blocks,sal
 end
 
 --[[
-z=parseFunction(0x00413190)
+z=parseFunction('GetModuleHandleA')
 
 b=createBlocks(z)
 for i=1,#b do

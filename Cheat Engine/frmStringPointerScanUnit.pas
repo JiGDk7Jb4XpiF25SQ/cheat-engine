@@ -237,6 +237,7 @@ type
     edtShadowSize2: TEdit;
     edtStructsize: TEdit;
     FindDialog1: TFindDialog;
+    spImageList: TImageList;
     lblBaseRegion: TLabel;
     lblInfo: TLabel;
     lblMaxLevel: TLabel;
@@ -1890,7 +1891,7 @@ begin
   edtExtraChange(edtExtra);
 
 
-  listview1.items.count:=min(1000000, pointerfilereader.count);
+  listview1.items.count:=dword(min(dword(1000000), dword(pointerfilereader.count)));
 
   //setup rescan mode
 

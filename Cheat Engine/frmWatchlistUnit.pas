@@ -14,6 +14,7 @@ type
   { TfrmWatchlist }
 
   TfrmWatchlist = class(TForm)
+    wlImageList: TImageList;
     lvWatchlist: TListView;
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
@@ -176,7 +177,7 @@ end;
 
 procedure TfrmWatchlist.MenuItem4Click(Sender: TObject);
 var
-  a: integer;
+  a: ptruint;
   e: boolean;
 
 begin

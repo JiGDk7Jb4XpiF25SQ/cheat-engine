@@ -73,6 +73,27 @@ begin
   result:=1;
 end;
 
+function canvas_getHandle(L: PLua_State): integer; cdecl;
+var
+  canvas: TCanvas;
+begin
+  canvas:=luaclass_getClassObject(L);
+  lua_pushinteger(L, canvas.handle);
+  result:=1;
+end;
+
+function canvas_setHandle(L: PLua_State): integer; cdecl;
+var
+  canvas: TCanvas;
+begin
+  if lua_gettop(L)>=1 then
+  begin
+    canvas:=luaclass_getClassObject(L);
+    canvas.handle:=lua_tointeger(L,1);
+  end;
+  result:=0;
+end;
+
 function canvas_line(L: PLua_State): integer; cdecl;
 var
   canvas: TCanvas;
@@ -142,14 +163,65 @@ begin
   canvas:=luaclass_getClassObject(L);
   if lua_gettop(L)>=4 then
   begin
-    x1:=lua_tointeger(L,-4);
-    y1:=lua_tointeger(L,-3);
-    x2:=lua_tointeger(L,-2);
-    y2:=lua_tointeger(L,-1);
+    x1:=lua_tointeger(L,1);
+    y1:=lua_tointeger(L,2);
+    x2:=lua_tointeger(L,3);
+    y2:=lua_tointeger(L,4);
 
     canvas.FillRect(x1,y1,x2,y2);
   end;
 end;
+
+function canvas_roundRect(L: PLua_State): integer; cdecl;
+var
+  canvas: TCanvas;
+  x1,y1: integer;
+  x2,y2: integer;
+  rx,ry: integer;
+begin
+  result:=0;
+  canvas:=luaclass_getClassObject(L);
+  if lua_gettop(L)>=6 then
+  begin
+    x1:=lua_tointeger(L,1);
+    y1:=lua_tointeger(L,2);
+    x2:=lua_tointeger(L,3);
+    y2:=lua_tointeger(L,4);
+
+    rx:=lua_tointeger(L,5);
+    ry:=lua_tointeger(L,6);
+
+    canvas.RoundRect(x1,y1,x2,y2,rx,ry);
+  end;
+end;
+
+function canvas_drawFocusRect(L: PLua_State): integer; cdecl;
+var
+  canvas: TCanvas;
+  x1,y1: integer;
+  x2,y2: integer;
+  r: trect;
+begin
+  result:=0;
+  canvas:=luaclass_getClassObject(L);
+  if lua_gettop(L)>=4 then
+  begin
+    x1:=lua_tointeger(L,1);
+    y1:=lua_tointeger(L,2);
+    x2:=lua_tointeger(L,3);
+    y2:=lua_tointeger(L,4);
+
+    canvas.DrawFocusRect(rect(x1,y1,x2,y2));
+  end
+  else
+  if lua_gettop(L)=1 then
+  begin
+    r:=lua_toRect(L,1);
+    canvas.DrawFocusRect(r);
+  end;
+end;
+
+
 
 function canvas_textOut(L: PLua_State): integer; cdecl;
 var
@@ -175,6 +247,8 @@ var
   rect: TRect;
   x,y: integer;
   text: string;
+
+  outrect: Trect;
 begin
   result:=0;
   canvas:=luaclass_getClassObject(L);
@@ -184,7 +258,10 @@ begin
     x:=lua_tointeger(L,2);
     y:=lua_tointeger(L,3);
     text:=Lua_ToString(L,4);
-    renderFormattedText(canvas,rect,x,y,text);
+    outrect:=renderFormattedText(canvas,rect,x,y,text);
+
+    lua_pushrect(L,outrect);
+    result:=1;
   end;
 
 end;
@@ -475,6 +552,7 @@ begin
   luaclass_addClassFunctionToTable(L, metatable, userdata, 'lineTo', canvas_lineTo);
   luaclass_addClassFunctionToTable(L, metatable, userdata, 'rect', canvas_rect);
   luaclass_addClassFunctionToTable(L, metatable, userdata, 'fillRect', canvas_fillRect);
+  luaclass_addClassFunctionToTable(L, metatable, userdata, 'roundRect', canvas_roundRect);
   luaclass_addClassFunctionToTable(L, metatable, userdata, 'textOut', canvas_textOut);
   luaclass_addClassFunctionToTable(L, metatable, userdata, 'textRect', canvas_textRect);
   luaclass_addClassFunctionToTable(L, metatable, userdata, 'getTextWidth', canvas_getTextWidth);
@@ -490,6 +568,7 @@ begin
   luaclass_addClassFunctionToTable(L, metatable, userdata, 'getPenPosition', canvas_getPenPosition);
   luaclass_addClassFunctionToTable(L, metatable, userdata, 'setPenPosition', canvas_setPenPosition);
   luaclass_addClassFunctionToTable(L, metatable, userdata, 'getClipRect', canvas_getClipRect);
+  luaclass_addClassFunctionToTable(L, metatable, userdata, 'drawFocusRect', canvas_drawFocusRect);
 
 
   Luaclass_addPropertyToTable(L, metatable, userdata, 'Brush', canvas_getBrush, nil);
@@ -497,6 +576,7 @@ begin
   Luaclass_addPropertyToTable(L, metatable, userdata, 'Font', canvas_getFont, nil);
   Luaclass_addPropertyToTable(L, metatable, userdata, 'Width', canvas_getWidth, nil);
   Luaclass_addPropertyToTable(L, metatable, userdata, 'Height', canvas_getHeight, nil);
+  Luaclass_addPropertyToTable(L, metatable, userdata, 'Handle', canvas_getHandle, canvas_setHandle);
 
 end;
 

@@ -120,6 +120,7 @@ type
   TformAddressChange = class(TForm)
     cbCodePage: TCheckBox;
     editDescription: TEdit;
+    caImageList: TImageList;
     Label12: TLabel;
     Label3: TLabel;
     lblValue: TLabel;
@@ -231,7 +232,7 @@ var
 
 implementation
 
-uses MainUnit, formsettingsunit, ProcessHandlerUnit, Parsers;
+uses MainUnit, formsettingsunit, ProcessHandlerUnit, Parsers, vartypestrings;
 
 resourcestring
   rsThisPointerPointsToAddress = 'This pointer points to address';
@@ -1181,7 +1182,7 @@ begin
   //read the address and display the value it points to
 
   a:=symhandler.getAddressFromName(utf8toansi(editAddress.Text),false,e);
-  if not e then
+  if (not e) and (cbvarType.ItemIndex<>-1) then
   begin
     //get the vartype and parse it
 
@@ -1384,6 +1385,7 @@ var bit: integer;
     i: integer;
 begin
   memoryrecord.Vartype:=vartype;
+  memoryrecord.CustomTypeName:='';
 
 
   case vartype of
@@ -1445,6 +1447,18 @@ procedure TformAddressChange.FormCreate(Sender: TObject);
 var i: integer;
 begin
   //fill the varlist with custom types
+  cbvarType.Items.Clear;
+  cbvarType.items.add(rs_vtBinary);
+  cbvarType.items.add(rs_vtByte);
+  cbvarType.items.add(rs_vtWord);
+  cbvarType.items.add(rs_vtDword);
+  cbvarType.items.add(rs_vtQword);
+  cbvarType.items.add(rs_vtSingle);
+  cbvarType.items.add(rs_vtDouble);
+  cbvarType.items.add(rs_vtString);
+  cbvarType.items.add(rs_vtByteArray);
+
+
   for i:=0 to customTypes.Count-1 do
     cbvarType.Items.AddObject(TCustomType(customtypes[i]).name, customtypes[i]);
 

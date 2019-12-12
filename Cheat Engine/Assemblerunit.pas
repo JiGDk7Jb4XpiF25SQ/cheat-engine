@@ -1,3 +1,6 @@
+// Copyright Cheat Engine. All Rights Reserved.
+
+
 unit Assemblerunit;
 
 //todo: case
@@ -18,6 +21,10 @@ uses dialogs,LCLIntf,sysutils,imagehlp, ProcessHandlerUnit,vextypedef;
 
 const opcodecount=1910;  //I wish there was a easier way than to handcount
   //1112
+
+
+type
+  EAssemblerException=class(Exception);
 
 
 
@@ -2009,14 +2016,14 @@ const opcodes: array [1..opcodecount] of topcode =(
   (mnemonic:'VLDMXCSR';opcode1:eo_reg2;paramtype1:par_m32;bytes:1;bt1:$ae;W0:true; hasvex:true; vexL:0; vexOpcodeExtension: oe_none; vexLeadingOpcode: lo_0F),
   (mnemonic:'VMASKMOVDQU';opcode1:eo_reg;paramtype1:par_xmm;paramtype2:par_xmm;bytes:1;bt1:$f7;hasvex:true; vexL:0; vexOpcodeExtension: oe_66; vexLeadingOpcode: lo_0F),
 
-  (mnemonic:'VMASKMOVPD';opcode1:eo_reg;paramtype1:par_xmm;paramtype2:par_xmm;paramtype3:par_m128; bytes:1;bt1:$2d;W1:true;hasvex:true; vexL:0; vexOpcodeExtension: oe_66;vexLeadingOpcode: lo_0F_38; vexExtraParam:2),
-  (mnemonic:'VMASKMOVPD';opcode1:eo_reg;paramtype1:par_ymm;paramtype2:par_ymm;paramtype3:par_m256; bytes:1;bt1:$2d;W1:true;hasvex:true; vexL:1; vexOpcodeExtension: oe_66;vexLeadingOpcode: lo_0F_38; vexExtraParam:2),
-  (mnemonic:'VMASKMOVPD';opcode1:eo_reg;paramtype1:par_m128;paramtype2:par_xmm;paramtype3:par_xmm; bytes:1;bt1:$2f;W1:true;hasvex:true; vexL:0; vexOpcodeExtension: oe_66;vexLeadingOpcode: lo_0F_38; vexExtraParam:2),
-  (mnemonic:'VMASKMOVPD';opcode1:eo_reg;paramtype1:par_m256;paramtype2:par_ymm;paramtype3:par_ymm; bytes:1;bt1:$2f;W1:true;hasvex:true; vexL:1; vexOpcodeExtension: oe_66;vexLeadingOpcode: lo_0F_38; vexExtraParam:2),
-  (mnemonic:'VMASKMOVPS';opcode1:eo_reg;paramtype1:par_xmm;paramtype2:par_xmm;paramtype3:par_m128; bytes:1;bt1:$2c;W1:true;hasvex:true; vexL:0; vexOpcodeExtension: oe_66;vexLeadingOpcode: lo_0F_38; vexExtraParam:2),
-  (mnemonic:'VMASKMOVPS';opcode1:eo_reg;paramtype1:par_ymm;paramtype2:par_ymm;paramtype3:par_m256; bytes:1;bt1:$2c;W1:true;hasvex:true; vexL:1; vexOpcodeExtension: oe_66;vexLeadingOpcode: lo_0F_38; vexExtraParam:2),
-  (mnemonic:'VMASKMOVPS';opcode1:eo_reg;paramtype1:par_m128;paramtype2:par_xmm;paramtype3:par_xmm; bytes:1;bt1:$2e;W1:true;hasvex:true; vexL:0; vexOpcodeExtension: oe_66;vexLeadingOpcode: lo_0F_38; vexExtraParam:2),
-  (mnemonic:'VMASKMOVPS';opcode1:eo_reg;paramtype1:par_m256;paramtype2:par_ymm;paramtype3:par_ymm; bytes:1;bt1:$2e;W1:true;hasvex:true; vexL:1; vexOpcodeExtension: oe_66;vexLeadingOpcode: lo_0F_38; vexExtraParam:2),
+  (mnemonic:'VMASKMOVPD';opcode1:eo_reg;paramtype1:par_xmm;paramtype2:par_xmm;paramtype3:par_m128; bytes:1;bt1:$2d;W0:true;hasvex:true; vexL:0; vexOpcodeExtension: oe_66;vexLeadingOpcode: lo_0F_38; vexExtraParam:2),
+  (mnemonic:'VMASKMOVPD';opcode1:eo_reg;paramtype1:par_ymm;paramtype2:par_ymm;paramtype3:par_m256; bytes:1;bt1:$2d;W0:true;hasvex:true; vexL:1; vexOpcodeExtension: oe_66;vexLeadingOpcode: lo_0F_38; vexExtraParam:2),
+  (mnemonic:'VMASKMOVPD';opcode1:eo_reg;paramtype1:par_m128;paramtype2:par_xmm;paramtype3:par_xmm; bytes:1;bt1:$2f;W0:true;hasvex:true; vexL:0; vexOpcodeExtension: oe_66;vexLeadingOpcode: lo_0F_38; vexExtraParam:2),
+  (mnemonic:'VMASKMOVPD';opcode1:eo_reg;paramtype1:par_m256;paramtype2:par_ymm;paramtype3:par_ymm; bytes:1;bt1:$2f;W0:true;hasvex:true; vexL:1; vexOpcodeExtension: oe_66;vexLeadingOpcode: lo_0F_38; vexExtraParam:2),
+  (mnemonic:'VMASKMOVPS';opcode1:eo_reg;paramtype1:par_xmm;paramtype2:par_xmm;paramtype3:par_m128; bytes:1;bt1:$2c;W0:true;hasvex:true; vexL:0; vexOpcodeExtension: oe_66;vexLeadingOpcode: lo_0F_38; vexExtraParam:2),
+  (mnemonic:'VMASKMOVPS';opcode1:eo_reg;paramtype1:par_ymm;paramtype2:par_ymm;paramtype3:par_m256; bytes:1;bt1:$2c;W0:true;hasvex:true; vexL:1; vexOpcodeExtension: oe_66;vexLeadingOpcode: lo_0F_38; vexExtraParam:2),
+  (mnemonic:'VMASKMOVPS';opcode1:eo_reg;paramtype1:par_m128;paramtype2:par_xmm;paramtype3:par_xmm; bytes:1;bt1:$2e;W0:true;hasvex:true; vexL:0; vexOpcodeExtension: oe_66;vexLeadingOpcode: lo_0F_38; vexExtraParam:2),
+  (mnemonic:'VMASKMOVPS';opcode1:eo_reg;paramtype1:par_m256;paramtype2:par_ymm;paramtype3:par_ymm; bytes:1;bt1:$2e;W0:true;hasvex:true; vexL:1; vexOpcodeExtension: oe_66;vexLeadingOpcode: lo_0F_38; vexExtraParam:2),
 
 
   (mnemonic:'VMAXPD';opcode1:eo_reg;paramtype1:par_xmm;paramtype2:par_xmm;paramtype3:par_xmm_m128; bytes:1;bt1:$5f;hasvex:true; vexL:0; vexOpcodeExtension: oe_66; vexLeadingOpcode: lo_0F; vexExtraParam:2),
@@ -2727,6 +2734,7 @@ type TSingleLineAssembler=class
     function getreg(reg: string): integer; overload;
 
     function HandleTooBigAddress(opcode: string; address: ptrUint;var bytes: TAssemblerBytes; actualdisplacement: integer): boolean;
+    procedure Invalid64BitValueFor32BitField(v: qword);
   public
     function Assemble(opcode:string; address: ptrUint;var bytes: TAssemblerBytes;assemblerPreference: TassemblerPreference=apNone; skiprangecheck: boolean=false): boolean;
 
@@ -2756,8 +2764,9 @@ uses symbolhandler, assemblerArm, Parsers, NewKernelHandler;
 {$endif}
 
 {$ifdef windows}
-uses {$ifndef autoassemblerdll}CEFuncProc,{$endif}symbolhandler, lua, luahandler,
-  lualib, assemblerArm, Parsers, NewKernelHandler, LuaCaller, math, cpuidUnit;
+uses windows, {$ifndef autoassemblerdll}CEFuncProc,{$endif}symbolhandler, lua,
+luahandler, lualib, assemblerArm, Parsers, NewKernelHandler, LuaCaller, math,
+cpuidUnit, classes, controls;
 {$endif}
 
 resourcestring
@@ -2772,8 +2781,12 @@ resourcestring
   rsAssemblerError = 'Assembler error';
   rsOffsetTooBig = 'offset too big';
   rsInvalidValueFor32Bit = 'The value provided can not be encoded in a 32-bit field';
+  rsInvalid64BitValueFor32BitField = 'The value %.16x can not be encoded using a 32-bit signed value. But if you meant %.16x then that''s ok and you should have provided it like that in the first place.  Is it ok to change it to this?'#13#10'(This is the only time asked and will be remembered until you restart CE)';
 
-var ExtraAssemblers: array of TAssemblerEvent;
+var
+  ExtraAssemblers: array of TAssemblerEvent;
+  naggedTheUserAboutWrongSignedValue: boolean;
+  naggedTheUserAboutWrongSignedValueAnswer: boolean;
 
 
 function registerAssembler(m: TAssemblerEvent): integer;
@@ -2916,6 +2929,21 @@ begin
   end;
 end;
 
+procedure AddWideString(var bytes: Tassemblerbytes; s: widestring);
+var
+  i,j: integer;
+  size: integer;
+
+begin
+  size:=ptruint(@s[length(s)])-ptruint(@s[2]);
+
+  j:=length(bytes);
+  setlength(bytes,length(bytes)+size);
+
+
+  copymemory(@bytes[j],@s[2],size);
+end;
+
 function SignedValueToType(value: ptrint): integer;
 var
   vup: dword;
@@ -3026,7 +3054,7 @@ begin
   if (reg='R14') then result:=14;
   if (reg='R15') then result:=15;
 
-  if (result=-1) and exceptonerror then raise exception.Create(rsInvalidRegister);
+  if (result=-1) and exceptonerror then raise EAssemblerException.create(rsInvalidRegister);
 end;
 
 function getreg(reg: string): integer; overload;
@@ -3062,7 +3090,7 @@ begin
     if (reg='R15') or (reg='R15D') or (reg='R15W') or (reg='R15L') or (reg='MM15') or (reg='XMM15') or (reg='YMM15') or (reg='ST(15)') or (reg='PS') or (reg='CR15') or (reg='DR15') then exit(15);
   end;
 
-  if (result=1000) and exceptonerror then raise exception.Create(rsInvalidRegister);
+  if (result=1000) and exceptonerror then raise EAssemblerException.create(rsInvalidRegister);
 end;
 
 function TSingleLineAssembler.getreg(reg: string): integer; overload;
@@ -3440,7 +3468,7 @@ begin
     if not haserror then
       token:=temp
     else
-      raise exception.create(rsInvalid);
+      raise EAssemblerException.create(rsInvalid);
   end;
 
 
@@ -3473,10 +3501,18 @@ begin
         if temp<>'' then
         begin
           setlength(tokens,length(tokens)+1);
-          if token[i]=' ' then temp:=temp+' ';
+          //if token[i]=' ' then temp:=temp+' ';
           tokens[length(tokens)-1]:=temp;
           temp:='';
         end;
+
+        if (length(tokens)>0) and (token[i] in ['+','-']) and (tokens[length(tokens)-1]=' ') then //relative offset ' +xxx'
+        begin
+          temp:=temp+token[i];
+          inc(i);
+          continue;
+        end;
+
         setlength(tokens,length(tokens)+1);
         tokens[length(tokens)-1]:=token[i];
         inc(i);
@@ -3497,10 +3533,9 @@ begin
 
   for i:=0 to length(tokens)-1 do
   begin
-    if (length(tokens[i])>=1) and (not (tokens[i][1] in ['[',']','+','-','*'])) then //3/16/2011: 11:15 (replaced or with and)
+    if (length(tokens[i])>=1) and (not (tokens[i][1] in ['[',']','+','-','*',' '])) then //3/16/2011: 11:15 (replaced or with and)
     begin
       val('$'+tokens[i],j,err);
-
       if (err<>0) and (getreg(tokens[i],false)=-1) then    //not a hexadecimal value and not a register
       begin
         temp:=inttohex(symhandler.getaddressfromname(tokens[i], true, haserror,nil),8);
@@ -3834,12 +3869,12 @@ begin
         '4': setsibscale(sib, 2); //*4
         '8': setsibscale(sib, 3); //*8
         else
-          raise exception.create(rsInvalidMultiplier);
+          raise EAssemblerException.create(rsInvalidMultiplier);
 
       end;
 
       if length(reg)>i+1 then
-        raise exception.create(rsInvalidMultiplier);
+        raise EAssemblerException.create(rsInvalidMultiplier);
 
       break;
     end;
@@ -3860,7 +3895,7 @@ begin
     if pos('EBP',reg)>0 then setsibindex(sib,5) else
     if pos('ESI',reg)>0 then setsibindex(sib,6) else
     if pos('EDI',reg)>0 then setsibindex(sib,7) else
-      raise exception.Create(rsWTFIsA+reg);
+      raise EAssemblerException.create(rsWTFIsA+reg);
   end
   else
   begin
@@ -3890,7 +3925,7 @@ begin
       if pos('EBP',reg)>0 then setsibindex(sib,5) else
       if pos('ESI',reg)>0 then setsibindex(sib,6) else
       if pos('EDI',reg)>0 then setsibindex(sib,7) else
-        raise exception.Create(rsWTFIsA+reg);
+        raise EAssemblerException.create(rsWTFIsA+reg);
 
       //still here, so I guess so
       needsAddressSwitchPrefix:=true;
@@ -3964,13 +3999,13 @@ begin
         break;
       end;
 
-    if length(temp)=0 then raise exception.Create(rsIDontUnderstandWhatYouMeanWith+address);
+    if length(temp)=0 then raise EAssemblerException.create(rsIDontUnderstandWhatYouMeanWith+address);
     if temp[1]='$' then val(temp,test,j) else val('$'+temp,test,j);
 
     if j>0 then //a register or a stupid user
     begin
       if increase=false then
-        raise exception.create(rsNegativeRegistersCanNotBeEncoded);
+        raise EAssemblerException.create(rsNegativeRegistersCanNotBeEncoded);
       regs:=regs+temp+'+';
     end
     else
@@ -3992,7 +4027,7 @@ begin
     if regs[i]='*' then inc(k);
   end;
 
-  if (j>1) or (k>1) then raise exception.Create(rsIDontUnderstandWhatYouMeanWith+address);
+  if (j>1) or (k>1) then raise EAssemblerException.create(rsIDontUnderstandWhatYouMeanWith+address);
 
   if disp=0 then setmod(modrm[0],0) else
   if (integer(disp)>=-128) and (integeR(disp)<=127) then setmod(modrm[0],1) else setmod(modrm[0],2);
@@ -4331,7 +4366,7 @@ begin
 
 
   finally
-    if not found then raise exception.create(rsInvalidAddress);
+    if not found then raise EAssemblerException.create(rsInvalidAddress);
 
     i:=getmod(modrm[0]);
     if i=1 then add(modrm,[byte(disp)]);
@@ -4373,7 +4408,7 @@ begin
     if (param='R13') or (param='R13D') or (param='R13W') or (param='R13L') or (param='MM13') or (param='XMM13') or (param='YMM13') then setrm(modrm[0],13) else
     if (param='R14') or (param='R14D') or (param='R14W') or (param='R14L') or (param='MM14') or (param='XMM14') or (param='YMM14') then setrm(modrm[0],14) else
     if (param='R15') or (param='R15D') or (param='R15W') or (param='R15L') or (param='MM15') or (param='XMM15') or (param='YMM15') then setrm(modrm[0],15) else
-    raise exception.Create(rsIDontUnderstandWhatYouMeanWith+param);
+    raise EAssemblerException.create(rsIDontUnderstandWhatYouMeanWith+param);
   end else setmodrm(modrm,address, length(bytes));
 
   //setreg
@@ -4384,7 +4419,7 @@ begin
       REX_R:=true;
     end
     else
-      raise exception.Create(rsTheAssemblerTriedToSetARegisteValueThatIsTooHigh);
+      raise EAssemblerException.create(rsTheAssemblerTriedToSetARegisteValueThatIsTooHigh);
   end;
   if reg=-1 then reg:=0;
 
@@ -4505,7 +4540,7 @@ end;
 function TSingleLineAssembler.Assemble(opcode:string; address: ptrUint;var bytes: TAssemblerBytes;assemblerPreference: TassemblerPreference=apNone; skiprangecheck: boolean=false): boolean;
 var tokens: ttokens;
     i,j,k,l: integer;
-    v,v2: qword;
+    v,v2, newv: qword;
     mnemonic,nroftokens: integer;
     oldParamtype1, oldParamtype2: TTokenType;
     paramtype1,paramtype2,paramtype3,paramtype4: TTokenType;
@@ -4516,6 +4551,7 @@ var tokens: ttokens;
     startoflist,endoflist: integer;
 
     tempstring: string;
+    tempwstring: widestring;
     overrideShort, overrideLong, overrideFar: boolean;
 
     is64bit: boolean;
@@ -4626,7 +4662,21 @@ begin
       if tokens[0]='DW' then
       begin
         for i:=1 to nroftokens-1 do
-          addword(bytes,HexStrToInt(tokens[i]));
+        begin
+          if tokens[i][1]='''' then //string
+          begin
+            j:=pos(tokens[i],uppercase(opcode));
+
+            if j>0 then
+            begin
+              tempwstring:=copy(opcode,j,length(tokens[i]));
+              addwidestring(bytes,tempwstring);
+            end
+            else addwidestring(bytes,tokens[i]);
+          end
+          else
+            addword(bytes,HexStrToInt(tokens[i]));
+        end;
 
         result:=true;
         exit;
@@ -4842,7 +4892,7 @@ begin
         'W' : i:=2; //2 byte long entries
         'D' : i:=4; //4 byte long entries
         'Q' : i:=8; //8 byte long entries
-        else raise exception.create(rsInvalid);
+        else raise EAssemblerException.create(rsInvalid);
       end;
 
       i:=i*strtoint(tokens[1]);
@@ -5163,7 +5213,7 @@ begin
             begin
               if (opcodes[k].paramtype1=par_imm32) then
               begin
-                if (signedvtype=64) and rex_w then raise exception.create(rsInvalidValueFor32Bit);
+                if (signedvtype=64) and rex_w then Invalid64BitValueFor32BitField(v);
 
                 addopcode(bytes,k);
                 adddword(bytes,v);
@@ -5199,7 +5249,7 @@ begin
             begin
               if (opcodes[k].paramtype1=par_imm32) then
               begin
-                if (signedvtype=64) and rex_w then raise exception.create(rsInvalidValueFor32Bit);
+                if (signedvtype=64) and rex_w then Invalid64BitValueFor32BitField(v);
 
                 addopcode(bytes,k);
                 adddword(bytes,v);
@@ -5237,7 +5287,7 @@ begin
         if (opcodes[j].paramtype2=par_noparam) and (parameter2='') then
         begin
           //imm32
-          if (signedvtype=64) and rex_w then raise exception.create(rsInvalidValueFor32Bit);
+          if (signedvtype=64) and rex_w then Invalid64BitValueFor32BitField(v);
 
           addopcode(bytes,j);
           addDword(bytes,v);
@@ -5540,7 +5590,7 @@ begin
 
             if (opcodes[j].opcode1=eo_id) and (opcodes[j].opcode2=eo_none) then
             begin
-              if (signedvtype=64) and rex_w then raise exception.create(rsInvalidValueFor32Bit);
+              if (signedvtype=64) and rex_w then Invalid64BitValueFor32BitField(v);
 
               addopcode(bytes,j);
               adddword(bytes,v);
@@ -6150,7 +6200,7 @@ begin
                      (opcodes[k].paramtype2=par_rm32) and
                      (opcodes[k].paramtype3=par_imm32) then
                   begin
-                    if (signedvtype=64) and rex_w then raise exception.create(rsInvalidValueFor32Bit);
+                    if (signedvtype=64) and rex_w then Invalid64BitValueFor32BitField(v);
 
                     addopcode(bytes,k);
                     result:=createmodrm(bytes,getreg(parameter1),parameter2);
@@ -6229,7 +6279,7 @@ begin
                 end;
               end;
 
-              if (signedvtype=64) and rex_w then raise exception.create(rsInvalidValueFor32Bit);
+              if (signedvtype=64) and rex_w then Invalid64BitValueFor32BitField(v);
 
               addopcode(bytes,j);
               createmodrm(bytes,getreg(parameter1),parameter1);
@@ -6536,7 +6586,7 @@ begin
                 if ((opcodes[k].paramtype1=par_rm32) and (opcodes[k].paramtype2=par_imm32)) and ((opcodes[k].paramtype3=par_noparam) and (parameter3='')) then
                 begin
                   //yes, there is
-                  if (signedvtype=64) and rex_w then raise exception.create(rsInvalidValueFor32Bit);
+                  if (signedvtype=64) and rex_w then Invalid64BitValueFor32BitField(v);
 
                   addopcode(bytes,k);
                   createmodrm(bytes,eoToReg(opcodes[k].opcode1),parameter1);
@@ -6583,7 +6633,12 @@ begin
               end;
             end;
             //no there's none
-            if (signedvtype=64) and rex_w then raise exception.create(rsInvalidValueFor32Bit);
+            if (signedvtype=64) and rex_w then
+            begin
+              //perhaps it's an old user and assumes it can be sign extended automagically
+              Invalid64BitValueFor32BitField(v);
+
+            end;
 
             addopcode(bytes,j);
             createmodrm(bytes,eoToReg(opcodes[j].opcode1),parameter1);
@@ -6896,9 +6951,25 @@ begin
           if (opcodes[j].paramtype3=par_m128) and ((paramtype3=ttMemoryLocation128) or (ismemorylocationdefault(parameter3))) then
           begin
             //ymm,ymm,m128,
-            if opcodes[j].paramtype3=par_noparam then
+            if opcodes[j].paramtype4=par_noparam then
             begin
               //ymm,ymm,m128
+              if (opcodes[j].vexExtraParam=2) then
+              begin
+                addopcode(bytes,j);
+                VEXvvvv:=(not getreg(parameter2)) and $f;
+                result:=createmodrm(bytes,getreg(parameter1),parameter3);
+                exit;
+              end;
+            end;
+          end;
+
+          if (opcodes[j].paramtype3=par_m256) and ((paramtype3=ttMemoryLocation256) or (ismemorylocationdefault(parameter3))) then
+          begin
+            //ymm,ymm,m256,
+            if opcodes[j].paramtype4=par_noparam then
+            begin
+              //ymm,ymm,m256
               if (opcodes[j].vexExtraParam=2) then
               begin
                 addopcode(bytes,j);
@@ -7783,7 +7854,7 @@ begin
 
         if RexPrefix<>0 then
         begin
-          if RexPrefixLocation=-1 then raise exception.create(rsAssemblerError);
+          if RexPrefixLocation=-1 then raise EAssemblerException.create(rsAssemblerError);
           RexPrefix:=RexPrefix or $40; //just make sure this is set
           setlength(bytes,length(bytes)+1);
           for i:=length(bytes)-1 downto RexPrefixLocation+1 do
@@ -7809,7 +7880,7 @@ begin
             //result:=HandleTooBigAddress(opcode,address, bytes, actualdisplacement);
 
             if skiprangecheck=false then  //for syntax checking
-              raise exception.create(rsOffsetTooBig);
+              raise EAssemblerException.create(rsOffsetTooBig);
           end
           else
             pdword(@bytes[relativeAddressLocation])^:=actualdisplacement-(address+length(bytes));
@@ -7836,12 +7907,30 @@ begin
         bytes[0]:=$67;
       end
       else
-        raise exception.create('Invalid address');
+        raise EAssemblerException.create('Invalid address');
     end;
   end;
 end;
 
 
+procedure TSingleLineAssembler.Invalid64BitValueFor32BitField(v: qword);
+var newv: qword;
+begin
+  if ((v shr 32)=0) and ((v shr 31 and 1)=1) then //could be saved
+  begin
+    newv:=qword($ffffffff00000000) or v;
+    if (naggedTheUserAboutWrongSignedValue=false) and (GetCurrentThreadId=MainThreadID) then
+    begin
+      naggedTheUserAboutWrongSignedValueAnswer:=MessageDlg(format(rsInvalid64BitValueFor32BitField, [v, newv]), mtWarning, [mbYes, mbNo], 0)=mrYes;
+      naggedTheUserAboutWrongSignedValue:=true;
+    end;
+
+    if naggedTheUserAboutWrongSignedValue and (naggedTheUserAboutWrongSignedValueAnswer=false) then
+      raise EAssemblerException.create(rsInvalidValueFor32Bit);
+  end
+  else
+    raise EAssemblerException.create(rsInvalidValueFor32Bit);
+end;
 
 //following routine is not finished and even when it is it's just useless
 function TSingleLineAssembler.HandleTooBigAddress(opcode: string; address: ptrUint;var bytes: TAssemblerBytes; actualdisplacement: integer): boolean;

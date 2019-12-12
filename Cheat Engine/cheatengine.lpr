@@ -101,8 +101,10 @@ uses
   BetterDLLSearchPath, UnexpectedExceptionsHelper, frmExceptionRegionListUnit,
   frmExceptionIgnoreListUnit, frmcodefilterunit, CodeFilterCallOrAllDialog,
   frmBranchMapperUnit, frmSymbolEventTakingLongUnit, LuaCheckListBox,
-  textrender, diagramtypes, diagramlink, diagramblock, diagram, LuaDiagram,
-  LuaDiagramBlock, LuaDiagramLink;
+  textrender, diagramtypes, diagramblock, diagram, LuaDiagram, LuaDiagramBlock,
+  LuaDiagramLink, diagramlink, BreakpointTypeDef, frmFoundlistPreferencesUnit,
+  LuaHeaderSections, frmDebuggerAttachTimeoutUnit, cheatecoins,
+  frmMicrotransactionsUnit, frmSyntaxHighlighterEditor, LuaCustomImageList;
 
 {$R cheatengine.res}
 {$R manifest.res}  //lazarus now has this build in (but sucks as it explicitly turns of dpi aware)
@@ -234,8 +236,6 @@ begin
     if (form is TsynCompletionForm)=false then   //dus nut wurk with this
       form.Font:=overridefont;
   end;
-
-
 end;
 
 
@@ -246,11 +246,13 @@ var
   r: TRegistry;
 
   path: string;
+  noautorun: boolean;
 begin
-  Application.Title:='Cheat Engine 6.8.x';
+  Application.Title:='Cheat Engine 7.0';
   Application.Initialize;
 
   overridefont:=nil;
+  noautorun:=false;
 
   getcedir;
   doTranslation;
@@ -311,6 +313,9 @@ begin
       except
       end;
     end;
+
+    if uppercase(ParamStr(i))='NOAUTORUN' then  //don't load any extentions yet
+      noautorun:=true;
   end;
 
 
@@ -326,7 +331,7 @@ begin
   Application.CreateForm(TTypeForm, TypeForm);
 
   initcetitle;
-  InitializeLuaScripts;
+  InitializeLuaScripts(noautorun);
 
   handleparameters;
 

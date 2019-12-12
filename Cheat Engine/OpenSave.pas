@@ -15,7 +15,7 @@ uses windows, forms, LCLIntf,registry, SysUtils,AdvancedOptionsUnit,CommentsUnit
      zstream, luafile, disassemblerComments, commonTypeDefs, lazutf8;
 
 
-var CurrentTableVersion: dword=28;
+var CurrentTableVersion: dword=30;
 procedure protecttrainer(filename: string);
 procedure unprotecttrainer(filename: string; stream: TStream);
 procedure SaveTable(Filename: string; protect: boolean=false; dontDeactivateDesignerForms: boolean=false);
@@ -347,6 +347,7 @@ begin
       while DissectedStructs.Count>0 do
         TDissectedStruct(DissectedStructs[0]).free;
 
+      mainform.addresslist.clear;
     end;
 
 
@@ -1087,8 +1088,10 @@ begin
   else
     mainform.Commentbutton.font.style:=mainform.Commentbutton.font.style-[fsBold];
 
-  mainform.autoattachcheck; //check if it added an auto attach check and see if it's currently running
-
+  try
+    mainform.autoattachcheck; //check if it added an auto attach check and see if it's currently running
+  except
+  end;
 //  mainform.addresslist.needsToReinterpret:=true;
 end;
 

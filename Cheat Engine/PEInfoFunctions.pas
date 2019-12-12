@@ -229,11 +229,41 @@ TImageDosHeader = _IMAGE_DOS_HEADER;
 IMAGE_DOS_HEADER = _IMAGE_DOS_HEADER;
 
 
+type
+  TRunTimeEntry=packed record
+    start: dword;
+    stop: dword;
+    unwind: dword;
+  end;
+  PRuntimeEntry=^TRunTimeEntry;
+
+  TRunTimeList=array [0..10000] of TRunTimeEntry;
+  PRuntimeList=^TRuntimeList;
+
+  TExceptionList=class
+  private
+    fmodulebase: ptruint;
+    exceptionAddress: ptruint;
+    size: integer;
+
+
+    list: PRuntimeList;
+  public
+    function getRunTimeEntry(address: ptruint): PRuntimeEntry;
+    constructor create(modulebase: ptruint; ela: ptruint; els: integer);
+    destructor destroy; override;
+    property ModuleBase: ptruint read fModuleBase;
+  end;
+
+
+
 function peinfo_getImageNtHeaders(headerbase: pointer; maxsize: dword):PImageNtHeaders;
 function peinfo_getExportList(filename: string; dllList: Tstrings): boolean; overload;
 function peinfo_getExportList(modulebase: ptruint; dllList: Tstrings): boolean; overload;
 function peinfo_is64bitfile(filename: string; var is64bit: boolean): boolean;
 function peinfo_getimagesizefromfile(filename: string; var size: dword): boolean;
+
+function peinfo_getExceptionList(modulebase: ptruint): TExceptionList;
 
 
 implementation
@@ -333,8 +363,76 @@ resourcestring
   rsPEIFNoExports = 'No exports';
 
 
+function TExceptionList.getRunTimeEntry(address: ptruint): PRunTimeEntry;
+var
+  i, count: integer;
+begin
+  //todo: use a sorted scan
+  result:=nil;
+  count:=size div 12;
+
+  address:=address-ModuleBase;
+
+  for i:=0 to count-1 do
+  begin
+    if InRangeQ(address, list^[i].start, list^[i].stop-1) then
+      exit(@list^[i]);
+  end;
+end;
+
+constructor TExceptionList.create(modulebase: ptruint; ela: ptruint; els: integer);
+var br: ptruint;
+begin
+  fmodulebase:=modulebase;
+  exceptionAddress:=ela;
+  size:=els;
+
+  getmem(list,size);
+
+  readprocessmemory(processhandle, pointer(modulebase+exceptionAddress), list, size,br);
+
+  size:=br;
+end;
+
+destructor TExceptionList.destroy;
+begin
+  freemem(list);
+  inherited destroy;
+end;
+
+function peinfo_getExceptionList(modulebase: ptruint): TExceptionList;
+var
+  ar: ptruint;
+  header: pointer;
+  ImageNtHeader: PImageNtHeaders;
+  OptionalHeader: PImageOptionalHeader;
+  OptionalHeader64: PImageOptionalHeader64 absolute OptionalHeader;
+  is64bit: boolean;
+begin
+  result:=nil;
+  getmem(header, 8192);
+  try
+    if readProcessMemory(processhandle, pointer(modulebase),header, 8192, ar)=false then exit;
+    ImageNtHeader:=peinfo_getImageNtHeaders(header, 8192);
+    if ImageNTHeader=nil then exit;
+    is64bit:=ImageNTHeader^.FileHeader.Machine=$8664;
+
+    if is64bit=false then exit;
+
+
+    OptionalHeader:=peinfo_getOptionalHeaders(header, 8192);
+    if OptionalHeader=nil then exit;
+
+    if OptionalHeader64^.DataDirectory[3].VirtualAddress<>0 then
+      result:=TExceptionList.Create(modulebase, OptionalHeader64^.DataDirectory[3].VirtualAddress, OptionalHeader64^.DataDirectory[3].Size);
+
+  finally
+    freemem(header);
+  end;
+end;
+
 function peinfo_getExportList(modulebase: ptruint; dllList: Tstrings): boolean;
-var fmap: TFileMapping;
+var
     header: pointer;
     ImageNtHeader: PImageNtHeaders;
     OptionalHeader: PImageOptionalHeader;
@@ -349,8 +447,6 @@ var fmap: TFileMapping;
     ar:ptruint;
 
     imagesize: dword;
-
-    diff: qword;
 begin
   result:=false;
 
@@ -384,15 +480,10 @@ begin
     if OptionalHeader=nil then raise exception.Create(strInvalidFile);
 
     if is64bit then
-    begin
-      diff:=ptruint(header)-OptionalHeader64^.ImageBase;
-      ImageExportDirectory:=PImageExportDirectory(ptruint(header)+OptionalHeader64^.DataDirectory[0].VirtualAddress);
-    end
+      ImageExportDirectory:=PImageExportDirectory(ptruint(header)+OptionalHeader64^.DataDirectory[0].VirtualAddress)
     else
-    begin
-      diff:=ptruint(header)-OptionalHeader^.ImageBase;
       ImageExportDirectory:=PImageExportDirectory(ptruint(header)+OptionalHeader^.DataDirectory[0].VirtualAddress);
-    end;
+
 
     if (ptruint(ImageExportDirectory)<=ptruint(header)) or (ptruint(ImageExportDirectory)>=(ptruint(header)+imagesize)) then
       raise exception.create(rsPEIFNoExports);
@@ -420,6 +511,7 @@ begin
       freemem(header);
   end;
 end;
+
 
 function peinfo_getExportList(filename: string; dllList: Tstrings): boolean;
 var fmap: TFileMapping;
